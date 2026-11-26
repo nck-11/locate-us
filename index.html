@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Locate Us</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root { --blue: #1565C0; --yellow: #FFC400; --bg: #EEF4FB; --ink: #0D2B52; --line: #cfe0f5; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+header { background: var(--blue); color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--yellow); }
+header h1 { font-size: 18px; margin: 0; }
+header button { width: auto; margin: 0; }
+main { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 12px; max-width: 1200px; margin: 0 auto; }
+@media (min-width: 800px) { main { grid-template-columns: 320px 1fr; } }
+.card { background: #fff; border: 1px solid var(--line); border-top: 4px solid var(--yellow); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.card h2 { font-size: 15px; margin: 0 0 10px; color: var(--blue); }
+.auth { max-width: 360px; margin: 40px auto; }
+input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--line); font: inherit; margin-bottom: 8px; }
+button { font: inherit; font-weight: 600; padding: 10px 14px; border: 0; border-radius: 10px; background: var(--blue); color: #fff; cursor: pointer; width: 100%; margin-top: 4px; }
+button.alt { background: #fff; color: var(--blue); border: 1px solid var(--blue); }
+button.on { background: var(--yellow); color: var(--ink); }
+.muted { color: #5a6b82; font-size: 13px; }
+.msg { font-size: 13px; margin-top: 8px; }
+.person { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; gap: 8px; }
+.person:last-child { border-bottom: 0; }
+.person button { width: auto; margin: 0; padding: 6px 10px; font-size: 13px; }
+#map { height: 70vh; min-height: 380px; border-radius: 14px; border: 1px solid var(--line); }
+.pin { width: 18px; height: 18px; border-radius: 50%; background: var(--blue); border: 3px solid var(--yellow); box-shadow: 0 0 0 2px #fff; }
+.pin.me { background: var(--yellow); border-color: var(--blue); }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Locate Us</h1>
+  <button id="signOutBtn" class="alt hidden">Sign out</button>
+</header>
+
+<section id="auth" class="card auth">
+  <h2>Sign in</h2>
+  <input id="email" type="email" placeholder="Email" autocomplete="email">
+  <input id="password" type="password" placeholder="Password (6+ characters)" autocomplete="current-password">
+  <button id="signInBtn">Sign in</button>
+  <button id="signUpBtn" class="alt">Create account</button>
+  <div id="authMsg" class="msg"></div>
+</section>
+
+<main id="app" class="hidden">
+  <div>
+    <section class="card">
+      <h2>Your location</h2>
+      <button id="shareBtn">Start sharing</button>
+      <div id="status" class="msg muted">Sharing is off.</div>
+    </section>
+    <section class="card">
+      <h2>Connect with someone</h2>
+      <input id="inviteEmail" type="email" placeholder="Their email">
+      <button id="connectBtn">Connect</button>
+      <div id="connectMsg" class="msg"></div>
+    </section>
+    <section class="card">
+      <h2>Connections</h2>
+      <div id="people"><div class="muted">No connections yet.</div></div>
+    </section>
+  </div>
+  <div id="map"></div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
