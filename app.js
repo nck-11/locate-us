@@ -18,7 +18,7 @@ let fitted = false;
 let names = new Map();            // user id -> display name
 const markers = new Map();        // user id -> Leaflet marker
 
-const map = L.map("map").setView([10.7202, 122.5621], 13);
+const map = L.map("map").setView([10.7202, 122.5621], 16);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
   attribution: "&copy; OpenStreetMap contributors"
