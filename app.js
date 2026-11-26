@@ -1,13 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 // Paste your values from Supabase: Project Settings > API
-const SUPABASE_URL = "https://envqwmfjsllyxwujxygv.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_XF_D8E4Gri9maHVHesEoVQ_u3Y_TjlR";
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
 
-const SUPABASE_URL = "https://envqwmfjsllyxwujxygv.supabase.co";
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const $ = id => document.getElementById(id);
 
-const MIN_WRITE_MS = 2000;        // save at most one position every 2 seconds
+const MIN_WRITE_MS = 5000;        // save at most one position every 5 seconds
 const STALE_MS = 10 * 60 * 1000;  // hide a person after 10 minutes without an update
 
 let me = null;
@@ -16,17 +16,13 @@ let watchId = null;
 let lastWrite = 0;
 let fitted = false;
 let names = new Map();            // user id -> display name
-const markers = new Map();        // user id -> Google Maps marker
+const markers = new Map();        // user id -> Leaflet marker
 
-// Google Maps is loaded by the script tag in index.html
-const { Map } = await google.maps.importLibrary("maps");
-const map = new Map($("map"), {
-  center: { lat: 10.7202, lng: 122.5621 },
-  zoom: 13,
-  mapTypeControl: false,
-  streetViewControl: false,
-  fullscreenControl: false
-});
+const map = L.map("map").setView([10.7202, 122.5621], 13);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: "&copy; OpenStreetMap contributors"
+}).addTo(map);
 
 // ---------- Auth ----------
 $("signInBtn").onclick = async () => {
@@ -65,7 +61,7 @@ function showAuth() {
   $("auth").classList.remove("hidden");
   $("app").classList.add("hidden");
   $("signOutBtn").classList.add("hidden");
-  markers.forEach(m => m.setMap(null));
+  markers.forEach(m => m.remove());
   markers.clear();
   names = new Map();
   fitted = false;
@@ -84,7 +80,7 @@ function startSharing() {
   setStatus("Getting your location...");
   watchId = navigator.geolocation.watchPosition(onPosition, err => setStatus("Location error: " + err.message), {
     enableHighAccuracy: true,
-    maximumAge: 1000
+    maximumAge: 3000
   });
 }
 
@@ -160,7 +156,7 @@ function timeAgo(iso) {
 
 function removeMarker(id) {
   const m = markers.get(id);
-  if (m) { m.setMap(null); markers.delete(id); }
+  if (m) { m.remove(); markers.delete(id); }
 }
 
 // Draw or move one person's marker. Returns true if they are visible now.
@@ -170,27 +166,20 @@ function applyLocation(l) {
 
   const isMe = me && l.user_id === me.id;
   const label = (isMe ? "You" : names.get(l.user_id) || "Unknown") + " · " + timeAgo(l.updated_at);
-  const position = { lat: l.lat, lng: l.lng };
-
   let marker = markers.get(l.user_id);
   if (!marker) {
-    marker = new google.maps.Marker({
-      map,
-      position,
-      title: label,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 10,
-        fillColor: isMe ? "#FFC400" : "#1565C0",
-        fillOpacity: 1,
-        strokeColor: isMe ? "#1565C0" : "#FFC400",
-        strokeWeight: 3
-      }
+    const icon = L.divIcon({
+      className: "",
+      html: `<div class="pin ${isMe ? "me" : ""}"></div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
     });
+    marker = L.marker([l.lat, l.lng], { icon }).addTo(map);
     markers.set(l.user_id, marker);
   }
-  marker.setPosition(position);
-  marker.setTitle(label);
+  marker.setLatLng([l.lat, l.lng]);
+  if (marker.getTooltip()) marker.setTooltipContent(label);
+  else marker.bindTooltip(label, { direction: "top" });
   return true;
 }
 
@@ -200,13 +189,8 @@ function renderMap(locs) {
   [...markers.keys()].forEach(id => { if (!visible.has(id)) removeMarker(id); });
 
   if (!fitted && visible.size) {
-    const bounds = new google.maps.LatLngBounds();
-    locs.filter(l => visible.has(l.user_id)).forEach(l => bounds.extend({ lat: l.lat, lng: l.lng }));
-    map.fitBounds(bounds);
-    // Don't zoom in too far when only one person is visible
-    google.maps.event.addListenerOnce(map, "idle", () => {
-      if (map.getZoom() > 16) map.setZoom(16);
-    });
+    const pts = locs.filter(l => visible.has(l.user_id)).map(l => [l.lat, l.lng]);
+    map.fitBounds(pts, { padding: [40, 40], maxZoom: 16 });
     fitted = true;
   }
 }
