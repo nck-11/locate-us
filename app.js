@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 // Paste your values from Supabase: Project Settings > API
-const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+const SUPABASE_URL = "https://envqwmfjsllyxwujxygv.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_XF_D8E4Gri9maHVHesEoVQ_u3Y_TjlR";
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const $ = id => document.getElementById(id);
